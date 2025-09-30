@@ -1,10 +1,10 @@
 from fastapi import FastAPI
-from app.routers import vectorizer
+from app.routers import routers
 
 app = FastAPI(title="Image Vectorizer API", version="1.0.0")
 
 # Routers
-app.include_router(vectorizer.router)
+app.include_router(routers.router)
 
 @app.get("/")
 def root():
