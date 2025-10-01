@@ -13,8 +13,7 @@ def find_most_similar_images(query_embedding, top_n=3):
         conn = get_db_connection()
         cursor = conn.cursor()
         
-        print("FIND MOST SIMILAR!")
-        
+        # DEBUG PRINT
         # Check if we have any data first
         cursor.execute("SELECT COUNT(*) FROM image_vectors WHERE embedding IS NOT NULL")
         count = cursor.fetchone()[0]
@@ -29,27 +28,31 @@ def find_most_similar_images(query_embedding, top_n=3):
         else:
             vector_str = '[' + ','.join(map(str, query_embedding.tolist())) + ']'
         
-        # Use pgvector cosine distance operator
+        # Use pgvector cosine similarity operator
         query = """
-            SELECT image_path, label, embedding <-> %s AS distance 
-            FROM image_vectors 
+            SELECT image_path, page_id, repo_source, feature_related,
+                1 - (embedding <=> %s) AS cosine_similarity
+            FROM image_vectors
             WHERE embedding IS NOT NULL
-            ORDER BY embedding <-> %s 
-            LIMIT %s
+            ORDER BY cosine_similarity DESC
+            LIMIT %s;
         """
         
-        cursor.execute(query, (vector_str, vector_str, top_n))
+        cursor.execute(query, (vector_str, top_n))
         similar_images = cursor.fetchall()
         
+        # DEBUG PRINT
         print("Similar images found:", similar_images)
         
         # Format the results
         results = []
-        for image_path, label, distance in similar_images:
+        for image_path, page_id, repo_source, feature_related, cosine_similarity in similar_images:
             results.append({
                 "image_path": image_path,
-                "label": label,
-                "distance": float(distance) if distance is not None else 1.0
+                "page_id": page_id,
+                "repo_source": repo_source,
+                "feature_related": feature_related,
+                "cosine_similarity": float(cosine_similarity) if cosine_similarity is not None else 1.0
             })
         
         return results

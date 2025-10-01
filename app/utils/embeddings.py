@@ -35,3 +35,10 @@ class EmbeddingModel:
             return embedding.squeeze()
         else:
             raise ValueError("Embedding output is not a PyTorch tensor.")
+
+def cosine_distance_to_percentage(distance: float) -> float:
+    """Converts a cosine distance (0 to 2) to a similarity percentage (100 to 0)."""
+    clamped_distance = max(0, min(2, distance))
+    
+    similarity = 1 - (clamped_distance / 2)
+    return similarity * 100

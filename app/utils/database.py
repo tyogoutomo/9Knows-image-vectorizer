@@ -50,7 +50,9 @@ def create_table():
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS image_vectors (
                 id SERIAL PRIMARY KEY,
-                label text NULL,
+                page_id text NULL,
+                repo_source text NULL,
+                feature_related text NULL,
                 image_path text NULL,
                 embedding VECTOR(2048) NULL,
                 created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
@@ -61,4 +63,16 @@ def create_table():
         logger.info("Table created or verified successfully")
     except Exception as e:
         logger.error(f"Error creating table: {e}")
+        raise
+
+def clear_table():
+    """Delete all records from the image_vectors table."""
+    try:
+        cursor = get_db_connection().cursor()
+        cursor.execute("DELETE FROM image_vectors")
+        get_db_connection().commit()
+        cursor.close()
+        logger.info("All records deleted from image_vectors table")
+    except Exception as e:
+        logger.error(f"Error clearing table: {e}")
         raise
