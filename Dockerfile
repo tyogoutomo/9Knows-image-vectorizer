@@ -37,5 +37,4 @@ ENV PYTHONDONTWRITEBYTECODE=1
 # Switch to non-root user
 # USER appuser
 
-# Default command that can be overridden by docker-compose
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

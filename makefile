@@ -1,1 +1,2 @@
-cp .env.example .env
+init-env:
+	cp .env.example .env
