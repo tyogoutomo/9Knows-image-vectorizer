@@ -8,7 +8,8 @@ router = APIRouter(prefix="/api", tags=["vectorizer"])
 @router.post("/vectorize")
 async def vectorize(
     file: UploadFile = File(...),
-    page_id: str = Form(None),
+    platform: str = Form(None),
+    page: str = Form(None),
     repo_source: str = Form(None),
     feature_related: str = Form(None)
 ):
@@ -17,7 +18,14 @@ async def vectorize(
 
     contents: bytes = await file.read()
     vector = vectorize_image(contents)
-    save_vector_to_db(file.filename, vector, page_id, repo_source, feature_related)
+    err = save_vector_to_db(file.filename, vector, platform, page, repo_source, feature_related)
+
+    if err:
+        return {
+            "status": "failed",
+            "filename": file.filename,
+            "error": err,
+        }
 
     return {
         "status": "success",
@@ -35,19 +43,11 @@ async def similarity(file: UploadFile = File(...)):
     
     # Perform similarity search query
     similar_images = find_most_similar_images(vector)
-    
-    # DEBUG PRINT
-    print("Most similar images:")
-    page_ids = []
-    for result in similar_images:
-        print(f"Image: {result['image_path']}, Page ID: {result['page_id']}, Repo Source: {result['repo_source']}, Feature Related: {result['feature_related']}, Cosine Similarity: {result['cosine_similarity']}")
-        page_ids.append(result['page_id'])
 
     return {
         "status": "success",
         "filename": file.filename,
         "similar_images": similar_images,
-        "page_ids": page_ids
     }
 
 @router.post("/clear")

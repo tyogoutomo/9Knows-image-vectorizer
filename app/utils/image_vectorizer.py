@@ -22,16 +22,17 @@ def vectorize_image(image_bytes: bytes) -> list[float]:
     normalized = embedding / torch.norm(embedding, p=2)
     return normalized.tolist()
 
-def save_vector_to_db(image_path: str, vector: list[float], page_id: str = None, repo_source: str = None, feature_related: str = None):
+def save_vector_to_db(image_path: str, vector: list[float], platform: str = None, page: str = None, repo_source: str = None, feature_related: str = None):
     """Save the image vector to a PostgreSQL database."""
     try:
         cursor = get_db_connection().cursor()
         cursor.execute(
-            "INSERT INTO image_vectors (page_id, repo_source, feature_related, embedding, image_path) VALUES (%s, %s, %s, %s, %s)",
-            (page_id, repo_source, feature_related, vector, image_path)
+            "INSERT INTO image_vectors (platform, page_name, repo_source, feature_related, embedding, image_path) VALUES (%s, %s, %s, %s, %s, %s)",
+            (platform, page, repo_source, feature_related, vector, image_path)
         )
         get_db_connection().commit()
         cursor.close()
-        print(f"Saved vector to DB: {image_path}, {page_id}, {repo_source}, {feature_related}")
+        print(f"Saved vector to DB: {image_path}, {platform}, {page}, {repo_source}, {feature_related}")
     except Exception as e:
         print(f"Error saving vector to database: {e}")
+        return str(e)
