@@ -4,6 +4,7 @@ from .database import get_db_connection
 
 logger = logging.getLogger(__name__)
 SIMILARITY_THRESHOLD = 0.2 ## TODO: NEED TO BE MODIFY BASED ON DATA EXPLORATION
+NOT_99_GROUP_STACK = "not 99 Group stack"
 
 def find_most_similar_images(query_embedding, top_n=3):
     """Find the most similar images using pgvector similarity search."""
@@ -20,7 +21,15 @@ def find_most_similar_images(query_embedding, top_n=3):
         print(f"Total records with embeddings: {count}")
         
         if count == 0:
-            return []
+            return [{
+                "image_path": "",
+                "platform": "",
+                "page": "",
+                "repo_source": "",
+                "feature_related": "",
+                "cosine_similarity": 0,
+                "message": "No vectors in the database."
+            }]
         
         # Convert query_embedding to proper format for pgvector
         if isinstance(query_embedding, list):
@@ -53,6 +62,15 @@ def find_most_similar_images(query_embedding, top_n=3):
                     "cosine_similarity": float(similarity) if similarity is not None else 0.0,
                 })
         
+        if len(results) == 0:
+            results.append({
+                "image_path": "",
+                "platform": NOT_99_GROUP_STACK,
+                "page": NOT_99_GROUP_STACK,
+                "repo_source": NOT_99_GROUP_STACK,
+                "feature_related": NOT_99_GROUP_STACK,
+                "cosine_similarity": 0,
+            })
         return results
         
     except Exception as e:
